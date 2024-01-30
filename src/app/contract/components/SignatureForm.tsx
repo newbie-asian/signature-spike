@@ -3,21 +3,21 @@ import React, { useRef, useState } from "react";
 import SignatureCanvas from "react-signature-canvas";
 
 type Props = {
-  handleSignatureData: (signature: {
-    fullName: string;
-    signedDate: string;
-  }) => void;
+  handleSignatureData: (e: any, key: number) => void;
   handleDisplaySignatureData: () => void;
   downloadPdf: (imgBase64: string) => void;
-  signatureData: {
-    fullName: string;
-    signedDate: string;
-  };
+  signatureData: any;
+  ckey: number;
 };
 
 const SignatureForm = (props: Props) => {
-  const { downloadPdf, handleSignatureData, signatureData } = props;
+  const { downloadPdf, handleSignatureData, signatureData, ckey } = props;
+  console.log("%c Line:15 🥝 signatureData", "color:#93c0a4", {
+    signatureData,
+    key: ckey,
+  });
   const sigCanvas = useRef(null);
+  console.log("%c Line:21 🥚 sigCanvas", "color:#e41a6a", sigCanvas);
 
   const clear = () => {
     if (sigCanvas.current) {
@@ -39,9 +39,10 @@ const SignatureForm = (props: Props) => {
           className="border border-slate-200 rounded-md p-2 w-full"
           type="text"
           placeholder="Full Name"
-          value={signatureData.fullName}
+          value={signatureData?.fullName}
           onChange={(e) => {
-            handleSignatureData(e);
+            console.log("%c Line:40 🥒 e", "color:#e41a6a", e);
+            handleSignatureData(e.target.value, ckey);
           }}
         />
       </div>

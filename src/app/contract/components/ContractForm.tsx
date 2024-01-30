@@ -17,21 +17,25 @@ const personalInfo = {
 
 const ContractForm = () => {
   const [displaySignatureData, setDisplaySignatureData] = useState(false);
-  console.log(
-    "%c Line:20 🌽 displaySignatureData",
-    "color:#b03734",
-    displaySignatureData
-  );
+
   const [pdf, setPdf] = useState("");
+  console.log("%c Line:22 🍭 pdf", "color:#b03734", pdf);
   const [signatureData, setSignatureData] = useState({
-    fullName: "",
-    signedDate: "",
+    1: {
+      fullName: "",
+      signedDate: "",
+    },
+    2: {
+      fullName: "",
+      signedDate: "",
+    },
   });
 
   const img = document?.createElement("img");
+  const span = document?.createElement("span");
   const canvasDiv = document.getElementById("demo");
-  console.log("%c Line:33 🌮 canvasDiv", "color:#ed9ec7", canvasDiv);
   const imgRef = useRef<HTMLDivElement>(null);
+  const spanRef = useRef<HTMLDivElement>(null);
   const pdfRef = useRef<HTMLDivElement>(null);
 
   const handleDisplaySignatureData = useCallback(() => {
@@ -41,17 +45,13 @@ const ContractForm = () => {
   const downloadPDF = useCallback(
     (imgBase64: string) => {
       img.src = imgBase64;
+      span.innerText = `${signatureData.fullName}, ${signatureData.signedDate}`;
       imgRef.current?.appendChild(img);
-      // canvasDiv?.remove();
+      spanRef.current?.appendChild(span);
       canvasDiv?.removeChild(canvasDiv?.firstChild || null);
       handleDisplaySignatureData();
 
       if (pdfRef?.current) {
-        console.log(
-          "%c Line:42 🍢 pdfRef.current.outerHTML",
-          "color:#465975",
-          pdfRef.current.outerHTML
-        );
         axios
           .post(
             "/api/files",
@@ -66,20 +66,26 @@ const ContractForm = () => {
             }
           )
           .then((res) => {
-            setPdf(res.data);
+            setPdf(res.data.pdfLink);
           });
       }
     },
     [pdfRef, canvasDiv, handleDisplaySignatureData, img]
   );
 
-  const handleChangeSignatureData = (e) => {
+  const handleChangeSignatureData = (value: string, key: number) => {
+    console.log("%c Line:77 🍻 key", "color:#b03734", key, value);
     const newSignatureData = {
-      fullName: e.target.value,
+      fullName: value,
       signedDate: new Date().toLocaleDateString(),
     };
 
-    setSignatureData(newSignatureData);
+    setSignatureData((prevState) => {
+      return {
+        ...prevState,
+        [key]: newSignatureData,
+      };
+    });
   };
 
   return (
@@ -121,22 +127,41 @@ const ContractForm = () => {
       </p>
 
       {/* Signature display with full name and signed date. */}
-      <div ref={imgRef}></div>
+      <div className="flex justify-between w-full">
+        <div>
+          <div ref={imgRef}></div>
+          <div ref={spanRef}></div>
 
-      {displaySignatureData && (
-        <span>{`${signatureData.fullName}, ${signatureData.signedDate}`}</span>
-      )}
-
-      {!displaySignatureData && (
-        <div id="demo">
-          <SignatureForm
-            handleSignatureData={handleChangeSignatureData}
-            handleDisplaySignatureData={handleDisplaySignatureData}
-            downloadPdf={downloadPDF}
-            signatureData={signatureData}
-          />
+          {!displaySignatureData && (
+            <div id="demo">
+              <SignatureForm
+                ckey={1}
+                handleSignatureData={handleChangeSignatureData}
+                handleDisplaySignatureData={handleDisplaySignatureData}
+                downloadPdf={downloadPDF}
+                signatureData={signatureData?.[1]}
+              />
+            </div>
+          )}
         </div>
-      )}
+
+        <div>
+          <div ref={imgRef}></div>
+          <div ref={spanRef}></div>
+
+          {!displaySignatureData && (
+            <div id="demo">
+              <SignatureForm
+                ckey={2}
+                handleSignatureData={handleChangeSignatureData}
+                handleDisplaySignatureData={handleDisplaySignatureData}
+                downloadPdf={downloadPDF}
+                signatureData={signatureData?.[2]}
+              />
+            </div>
+          )}
+        </div>
+      </div>
 
       {pdf && (
         <div
